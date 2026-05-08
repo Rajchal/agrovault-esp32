@@ -1,27 +1,34 @@
+# 1 "/tmp/tmpsbcc2_um"
+#include <Arduino.h>
+# 1 "/home/rajchal/vsrepo/agrovault-esp32/src/ColdRoomMonitor.ino"
 #include <WiFi.h>
 #include <WebServer.h>
 
-// Access point credentials
+
 const char *kApSsid = "ColdRoomMonitor";
 const char *kApPassword = "12345678";
 
-// API server on port 80
+
 WebServer server(80);
 
-// Simulated temperature state
+
 float currentTemperatureC = 5.0f;
 unsigned long lastTemperatureUpdateMs = 0;
 String lastUpdatedText = "--:--:--";
 
-// Temperature simulation timing
+
 const unsigned long kTemperatureUpdateIntervalMs = 1000;
 
-// Forward declarations
+
 void handleApi();
 void handleNotFound();
 void updateSimulatedTemperature();
 String buildTimestamp();
-
+void startAccessPoint();
+void setupRoutes();
+void setup();
+void loop();
+#line 25 "/home/rajchal/vsrepo/agrovault-esp32/src/ColdRoomMonitor.ino"
 void startAccessPoint()
 {
   WiFi.mode(WIFI_AP);
@@ -75,8 +82,8 @@ void updateSimulatedTemperature()
 
   lastTemperatureUpdateMs = now;
 
-  // Small random walk, clamped to 2.0C..8.0C.
-  const int deltaStep = random(-25, 26); // -0.25C..+0.25C
+
+  const int deltaStep = random(-25, 26);
   currentTemperatureC += deltaStep / 100.0f;
 
   if (currentTemperatureC < 2.0f)
