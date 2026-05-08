@@ -10,6 +10,7 @@ WebServer server(80);
 
 // Simulated temperature state
 float currentTemperatureC = 5.0f;
+float currentHumidityPercent = 75.0f;
 unsigned long lastTemperatureUpdateMs = 0;
 String lastUpdatedText = "--:--:--";
 
@@ -48,6 +49,7 @@ void setup()
 
   randomSeed((uint32_t)esp_random());
   currentTemperatureC = random(200, 801) / 100.0f;
+  currentHumidityPercent = random(6000, 9101) / 100.0f;
   lastTemperatureUpdateMs = millis();
   lastUpdatedText = buildTimestamp();
 
@@ -79,6 +81,10 @@ void updateSimulatedTemperature()
   const int deltaStep = random(-25, 26); // -0.25C..+0.25C
   currentTemperatureC += deltaStep / 100.0f;
 
+  // Small random walk, clamped to 60.0%..91.0%.
+  const int humidityDeltaStep = random(-40, 41); // -0.40%..+0.40%
+  currentHumidityPercent += humidityDeltaStep / 100.0f;
+
   if (currentTemperatureC < 2.0f)
   {
     currentTemperatureC = 2.0f;
@@ -86,6 +92,15 @@ void updateSimulatedTemperature()
   else if (currentTemperatureC > 8.0f)
   {
     currentTemperatureC = 8.0f;
+  }
+
+  if (currentHumidityPercent < 60.0f)
+  {
+    currentHumidityPercent = 60.0f;
+  }
+  else if (currentHumidityPercent > 91.0f)
+  {
+    currentHumidityPercent = 91.0f;
   }
 
   lastUpdatedText = buildTimestamp();
@@ -106,8 +121,8 @@ void handleApi()
 {
   char json[256];
   snprintf(json, sizeof(json),
-           "{\"temperature\":%.1f,\"lastUpdated\":\"%s\"}",
-           currentTemperatureC, lastUpdatedText.c_str());
+           "{\"temperature\":%.1f,\"humidity\":%.1f,\"lastUpdated\":\"%s\"}",
+           currentTemperatureC, currentHumidityPercent, lastUpdatedText.c_str());
   server.send(200, "application/json", json);
 }
 
